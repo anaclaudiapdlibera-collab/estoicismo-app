@@ -1,0 +1,2 @@
+# estoicismo-app
+Mentalidade Estoica
