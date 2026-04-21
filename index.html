@@ -337,7 +337,7 @@ body {
 .sound-icon { font-size:36px; }
 .sound-info { flex:1; }
 .sound-title { font-family:var(--font-display); font-size:15px; font-weight:700; color:var(--cream); }
-.sound-desc { font-size:13px; color:var(--gray-light); margin-top:4px; }
+.sound-desc { font-size:13.5px; font-family:var(--font-body); color:rgba(245,237,214,0.72); margin-top:5px; line-height:1.5; }
 .sound-badge {
   background: rgba(201,168,76,0.2);
   border: 1px solid var(--gold);
@@ -361,6 +361,8 @@ body {
 .track-name { font-size:14px; color:var(--cream); }
 .track-dur { font-size:12px; color:var(--gray); }
 .track-play { font-size:18px; color:var(--gold); }
+.track-item.track-playing { background: rgba(201,168,76,0.1); border-left: 3px solid rgba(201,168,76,0.7); }
+.track-item.track-playing .track-name { color: var(--gold); font-weight:700; }
 
 /* ── SHOP ITEMS ── */
 .shop-item {
@@ -680,6 +682,97 @@ body {
 .acc-result-title { font-family:'Playfair Display',Georgia,serif; font-size:18px; font-weight:700; color:var(--gold); margin-bottom:10px; }
 .acc-result-body { font-family:Georgia,serif; font-size:14px; color:rgba(245,237,214,0.78); line-height:1.7; margin-bottom:12px; }
 .acc-result-tip { font-size:13px; color:rgba(201,168,76,0.8); background:rgba(201,168,76,0.08); border-radius:8px; padding:10px 14px; }
+
+/* ── PLAYER GLOBAL DE MÚSICAS ── */
+.music-player {
+  margin: 0 16px 16px;
+  background: linear-gradient(135deg, rgba(201,168,76,0.12), rgba(201,168,76,0.05));
+  border: 1px solid rgba(201,168,76,0.3);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.player-track-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.player-mode-icon { font-size: 20px; flex-shrink:0; }
+.player-track-name {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cream);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.player-track-num {
+  font-size: 11px;
+  color: rgba(201,168,76,0.6);
+  font-family: var(--font-ui);
+  flex-shrink:0;
+}
+.player-progress-bar {
+  width: 100%;
+  height: 3px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  position: relative;
+}
+.player-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #C9A84C, #E8D27A);
+  border-radius: 2px;
+  width: 0%;
+  transition: width 0.5s linear;
+}
+.player-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+.player-btn {
+  background: none;
+  border: none;
+  color: rgba(245,237,214,0.85);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: all 0.15s;
+  line-height: 1;
+}
+.player-btn:active { transform: scale(0.9); }
+.player-btn-play {
+  background: rgba(201,168,76,0.2);
+  border: 1px solid rgba(201,168,76,0.4);
+  color: #C9A84C;
+  font-size: 22px;
+  padding: 8px 16px;
+  border-radius: 10px;
+}
+.player-btn-play:active { background: rgba(201,168,76,0.35); }
+.player-time {
+  font-size: 11px;
+  color: rgba(245,237,214,0.4);
+  font-family: var(--font-ui);
+  text-align: center;
+  margin-top: 6px;
+}
+.player-inactive {
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: italic;
+  color: rgba(245,237,214,0.35);
+  padding: 8px 0;
+}
+
 </style>
 </head>
 <body>
@@ -701,11 +794,28 @@ body {
   <div class="login-logo">Estoicismo de Trincheira</div>
   <h1 class="login-title">Protocolo<br>Marcus</h1>
   <p class="login-sub">"A filosofia que fez imperadores<br>manterem a sanidade sob pressão."</p>
-  <input class="login-input" type="text" id="loginName" placeholder="Seu primeiro nome (só no 1º acesso)" maxlength="30">
-  <input class="login-input" type="email" id="loginEmail" placeholder="Seu e-mail">
-  <input class="login-input" type="password" id="loginPass" placeholder="Crie uma senha (mín. 6 caracteres)">
-  <button class="btn-primary" onclick="doLogin()" style="margin:0;width:100%;">Iniciar Protocolo</button>
-  <p id="loginError" style="color:#e07080;font-size:13px;margin-top:8px;display:none;"></p>
+  <!-- MODO: Criar conta -->
+  <div id="loginModeRegister">
+    <input class="login-input" type="text" id="loginName" placeholder="Seu primeiro nome" maxlength="30">
+    <input class="login-input" type="email" id="loginEmail" placeholder="Seu e-mail">
+    <input class="login-input" type="password" id="loginPass" placeholder="Crie uma senha (mín. 6 caracteres)">
+    <button class="btn-primary" onclick="doLogin()" style="margin:0;width:100%;">Iniciar Protocolo</button>
+    <p id="loginError" style="color:#e07080;font-size:13px;margin-top:8px;display:none;"></p>
+    <button onclick="switchLoginMode('login')" style="background:none;border:none;color:var(--gold);font-size:13px;margin-top:14px;cursor:pointer;text-decoration:underline;width:100%;text-align:center;">
+      Já tem conta? Entre aqui
+    </button>
+  </div>
+
+  <!-- MODO: Entrar com conta existente -->
+  <div id="loginModeLogin" style="display:none;">
+    <input class="login-input" type="email" id="loginEmailOnly" placeholder="Seu e-mail">
+    <input class="login-input" type="password" id="loginPassOnly" placeholder="Sua senha">
+    <button class="btn-primary" onclick="doLoginOnly()" style="margin:0;width:100%;">Entrar</button>
+    <p id="loginErrorOnly" style="color:#e07080;font-size:13px;margin-top:8px;display:none;"></p>
+    <button onclick="switchLoginMode('register')" style="background:none;border:none;color:rgba(245,237,214,0.45);font-size:13px;margin-top:14px;cursor:pointer;text-decoration:underline;width:100%;text-align:center;">
+      Ainda não tem conta? Crie aqui
+    </button>
+  </div>
 
   <!-- Botão de acesso para novos alunos -->
   <a href="https://pay.kiwify.com.br/TR0HN9N" target="_blank"
@@ -888,6 +998,24 @@ body {
       <div class="topbar-title">Músicas de Trincheira</div>
       <div class="topbar-sub">Escolha seu modo</div>
     </div>
+  </div>
+
+  <!-- Player global -->
+  <div class="music-player" id="globalPlayer">
+    <div class="player-track-info">
+      <span class="player-mode-icon" id="playerModeIcon">🎵</span>
+      <span class="player-track-name" id="playerTrackName">Nenhuma faixa ativa</span>
+      <span class="player-track-num" id="playerTrackNum"></span>
+    </div>
+    <div class="player-progress-bar" id="playerProgressBar" onclick="playerSeek(event)">
+      <div class="player-progress-fill" id="playerProgressFill"></div>
+    </div>
+    <div class="player-controls">
+      <button class="player-btn" onclick="playerPrev()" title="Anterior">⏮</button>
+      <button class="player-btn player-btn-play" id="playerPlayBtn" onclick="playerToggle()">▶</button>
+      <button class="player-btn" onclick="playerNext()" title="Próxima">⏭</button>
+    </div>
+    <div class="player-time" id="playerTime"></div>
   </div>
 
   <div class="section-title">Selecione o Modo</div>
@@ -1888,6 +2016,55 @@ function getCurrentDay() {
 // ══════════════════════════════════════════════════════════
 // LOGIN
 // ══════════════════════════════════════════════════════════
+async function switchLoginMode(mode) {
+  const reg   = document.getElementById('loginModeRegister');
+  const login = document.getElementById('loginModeLogin');
+  if (mode === 'login') {
+    reg.style.display   = 'none';
+    login.style.display = 'block';
+    document.getElementById('loginEmailOnly').focus();
+  } else {
+    reg.style.display   = 'block';
+    login.style.display = 'none';
+    document.getElementById('loginName').focus();
+  }
+  // Limpar erros
+  ['loginError','loginErrorOnly'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.display = 'none'; el.textContent = ''; }
+  });
+}
+
+async function doLoginOnly() {
+  const email = document.getElementById('loginEmailOnly').value.trim();
+  const pass  = document.getElementById('loginPassOnly').value;
+  const errEl = document.getElementById('loginErrorOnly');
+  errEl.style.display = 'none';
+
+  if (!email || !pass) {
+    errEl.textContent = 'Preencha e-mail e senha.';
+    errEl.style.display = 'block'; return;
+  }
+
+  const btn = document.querySelector('#loginModeLogin .btn-primary');
+  btn.textContent = 'Entrando...'; btn.disabled = true;
+
+  try {
+    await window._fb.signInWithEmailAndPassword(window._fb.auth, email, pass);
+    // onAuthStateChanged cuida do resto
+  } catch(e) {
+    btn.textContent = 'Entrar'; btn.disabled = false;
+    if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password') {
+      errEl.textContent = 'E-mail ou senha incorretos.';
+    } else if (e.code === 'auth/too-many-requests') {
+      errEl.textContent = 'Muitas tentativas. Aguarde alguns minutos.';
+    } else {
+      errEl.textContent = 'Erro ao entrar. Tente novamente.';
+    }
+    errEl.style.display = 'block';
+  }
+}
+
 async function doLogin() {
   const name  = document.getElementById('loginName').value.trim();
   const email = document.getElementById('loginEmail').value.trim();
@@ -2356,6 +2533,12 @@ function toggleSoundMode(mode) {
   badge.textContent = '⏸ Ativo';
   card.classList.add('sound-playing');
 
+  // Carregar no player global e tocar
+  playerLoad(mode, 0);
+  soundAudio.play();
+  playerIsPlaying = true;
+  updatePlayerUI();
+
   // Render tracks
   renderTracks(mode);
 }
@@ -2379,10 +2562,128 @@ function renderTracks(mode) {
     </div>`).join('');
 }
 
-function playTrack(url, idx) {
-  soundAudio.src = url;
+// ── PLAYER GLOBAL ──────────────────────────────────────────
+let playerCurrentMode = null;
+let playerCurrentIdx  = 0;
+let playerIsPlaying   = false;
+
+const PLAYER_ICONS = { focus: '⚔️', decompress: '🌊', sleep: '😴' };
+const TRACK_NAMES = {
+  focus:      ['Hegemonikon','Kathêkon','Logos','Mente Blindada','Prohairesis'],
+  decompress: ['Chego Inteira','Eupatheia','O Dia que Passou','Soltura','Amor Fati'],
+  sleep:      ['Ataraxia','Enkrateia','Hegemonikon Descansa','Melete','Memento Mori, Memento Vivere'],
+};
+
+function updatePlayerUI() {
+  const urls  = playerCurrentMode ? (state.soundUrls[playerCurrentMode] || []) : [];
+  const total = urls.length;
+  const name  = playerCurrentMode && TRACK_NAMES[playerCurrentMode]
+    ? (TRACK_NAMES[playerCurrentMode][playerCurrentIdx] || `Faixa ${playerCurrentIdx + 1}`)
+    : 'Nenhuma faixa ativa';
+
+  document.getElementById('playerModeIcon').textContent   = playerCurrentMode ? PLAYER_ICONS[playerCurrentMode] : '🎵';
+  document.getElementById('playerTrackName').textContent  = name;
+  document.getElementById('playerTrackNum').textContent   = total ? `${playerCurrentIdx + 1}/${total}` : '';
+  document.getElementById('playerPlayBtn').textContent    = playerIsPlaying ? '⏸' : '▶';
+}
+
+function playerLoad(mode, idx) {
+  const urls = state.soundUrls[mode] || [];
+  if (!urls[idx]) return;
+  playerCurrentMode = mode;
+  playerCurrentIdx  = idx;
+  soundAudio.src    = urls[idx];
+  soundAudio.load();
+  updatePlayerUI();
+  highlightTrack(mode, idx);
+}
+
+function playerToggle() {
+  if (!playerCurrentMode) return;
+  if (playerIsPlaying) {
+    soundAudio.pause();
+    playerIsPlaying = false;
+  } else {
+    soundAudio.play();
+    playerIsPlaying = true;
+  }
+  updatePlayerUI();
+}
+
+function playerNext() {
+  if (!playerCurrentMode) return;
+  const urls = state.soundUrls[playerCurrentMode] || [];
+  const next = (playerCurrentIdx + 1) % urls.length;
+  playerLoad(playerCurrentMode, next);
   soundAudio.play();
-  showToast('Reproduzindo...');
+  playerIsPlaying = true;
+  updatePlayerUI();
+}
+
+function playerPrev() {
+  if (!playerCurrentMode) return;
+  const urls = state.soundUrls[playerCurrentMode] || [];
+  // Se passou mais de 3s, reinicia faixa atual; senão vai para a anterior
+  if (soundAudio.currentTime > 3) {
+    soundAudio.currentTime = 0;
+    return;
+  }
+  const prev = (playerCurrentIdx - 1 + urls.length) % urls.length;
+  playerLoad(playerCurrentMode, prev);
+  soundAudio.play();
+  playerIsPlaying = true;
+  updatePlayerUI();
+}
+
+function playerSeek(e) {
+  if (!soundAudio.duration) return;
+  const bar  = document.getElementById('playerProgressBar');
+  const rect = bar.getBoundingClientRect();
+  const pct  = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  soundAudio.currentTime = pct * soundAudio.duration;
+}
+
+function highlightTrack(mode, idx) {
+  ['focus','decompress','sleep'].forEach(m => {
+    const container = document.getElementById(`${m}-tracks`);
+    if (!container) return;
+    container.querySelectorAll('.track-item').forEach((el, i) => {
+      el.classList.toggle('track-playing', m === mode && i === idx);
+    });
+  });
+}
+
+function formatTime(s) {
+  if (!s || isNaN(s)) return '';
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60).toString().padStart(2, '0');
+  return `${m}:${sec}`;
+}
+
+// Eventos do soundAudio para atualizar a barra de progresso
+soundAudio.addEventListener('timeupdate', () => {
+  if (!soundAudio.duration) return;
+  const pct = (soundAudio.currentTime / soundAudio.duration) * 100;
+  const fill = document.getElementById('playerProgressFill');
+  if (fill) fill.style.width = pct + '%';
+  const timeEl = document.getElementById('playerTime');
+  if (timeEl) timeEl.textContent = `${formatTime(soundAudio.currentTime)} / ${formatTime(soundAudio.duration)}`;
+});
+
+soundAudio.addEventListener('ended', () => {
+  playerNext();
+});
+
+soundAudio.addEventListener('play',  () => { playerIsPlaying = true;  updatePlayerUI(); });
+soundAudio.addEventListener('pause', () => { playerIsPlaying = false; updatePlayerUI(); });
+
+function playTrack(url, idx) {
+  // Tocar faixa pelo modo ativo
+  if (!playerCurrentMode) return;
+  playerLoad(playerCurrentMode, idx);
+  soundAudio.play();
+  playerIsPlaying = true;
+  updatePlayerUI();
 }
 
 function saveSoundUrls() {
@@ -2935,5 +3236,3 @@ if (state.name && !window._fb) {
 </div>
 </body>
 </html>
-const DEFAULT_SOUND_URLS = 
-
