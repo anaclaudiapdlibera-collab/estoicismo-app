@@ -737,7 +737,7 @@ body {
     <span class="icon">📖</span>Hoje
   </button>
   <button class="tab" onclick="nav('sounds')" id="tab-sounds">
-    <span class="icon">🎵</span>Sons
+    <span class="icon">🎵</span>Músicas
   </button>
   <button class="tab" onclick="nav('diary')" id="tab-diary">
     <span class="icon">📔</span>Diário
@@ -885,7 +885,7 @@ body {
 <div class="screen" id="screen-sounds">
   <div class="topbar">
     <div>
-      <div class="topbar-title">Sons de Trincheira</div>
+      <div class="topbar-title">Músicas de Trincheira</div>
       <div class="topbar-sub">Escolha seu modo</div>
     </div>
   </div>
@@ -898,15 +898,13 @@ body {
       <div class="sound-icon">⚔️</div>
       <div class="sound-info">
         <div class="sound-title">Modo Foco</div>
-        <div class="sound-desc">Para encarar o dia. Alta performance.</div>
+        <div class="sound-desc">Para trabalhar com foco total. 5 faixas instrumentais estoicas para concentração profunda e alta performance.</div>
       </div>
       <div class="sound-badge" id="sound-focus-badge">▶ Ativar</div>
     </div>
   </div>
   <div class="track-list" id="tracks-focus">
-    <div style="font-size:12px;color:var(--gray);padding:8px 4px;font-style:italic;">
-      Adicione as URLs das músicas do Suno nas configurações abaixo ↓
-    </div>
+
     <div id="focus-tracks"></div>
   </div>
 
@@ -916,7 +914,7 @@ body {
       <div class="sound-icon">🌊</div>
       <div class="sound-info">
         <div class="sound-title">Modo Descompressão</div>
-        <div class="sound-desc">Para fechar o dia. Desligar do trabalho.</div>
+        <div class="sound-desc">Para soltar o peso do dia. 5 faixas para descomprimir, processar e fechar o ciclo com serenidade.</div>
       </div>
       <div class="sound-badge" id="sound-decompress-badge">▶ Ativar</div>
     </div>
@@ -931,7 +929,7 @@ body {
       <div class="sound-icon">😴</div>
       <div class="sound-info">
         <div class="sound-title">Modo Sono</div>
-        <div class="sound-desc">Para dormir sem ruminação.</div>
+        <div class="sound-desc">Para descansar de verdade. 5 faixas suaves para aquietar a mente e dormir sem carregar o trabalho.</div>
       </div>
       <div class="sound-badge" id="sound-sleep-badge">▶ Ativar</div>
     </div>
@@ -941,20 +939,7 @@ body {
   </div>
 
   <!-- Audio URLs config -->
-  <div class="section-title">Configurar Músicas (Suno)</div>
-  <div class="card">
-    <div style="font-size:13px;color:var(--gray-light);margin-bottom:12px;">Cole as URLs dos áudios gerados no Suno para cada categoria:</div>
-    <div style="font-size:12px;color:var(--gold);margin-bottom:6px;">⚔️ Modo Foco (separe por vírgula)</div>
-    <textarea id="focusUrls" style="width:100%;background:var(--surface2);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:var(--cream);padding:10px;font-size:12px;resize:none;" rows="3" placeholder="https://suno.ai/song/..., https://..."></textarea>
-    <div style="font-size:12px;color:var(--gold);margin:10px 0 6px;">🌊 Modo Descompressão</div>
-    <textarea id="decompressUrls" style="width:100%;background:var(--surface2);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:var(--cream);padding:10px;font-size:12px;resize:none;" rows="3" placeholder="https://suno.ai/song/..., https://..."></textarea>
-    <div style="font-size:12px;color:var(--gold);margin:10px 0 6px;">😴 Modo Sono</div>
-    <textarea id="sleepUrls" style="width:100%;background:var(--surface2);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:var(--cream);padding:10px;font-size:12px;resize:none;" rows="3" placeholder="https://suno.ai/song/..., https://..."></textarea>
-    <button class="btn-secondary" style="margin:12px 0 0;width:100%;" onclick="saveSoundUrls()">Salvar URLs</button>
-  </div>
-  <div style="height:16px;"></div>
-</div>
-
+  
 <!-- ══════════════════════════════════════ -->
 <!-- SCREEN: DIARY -->
 <!-- ══════════════════════════════════════ -->
@@ -1807,18 +1792,7 @@ let state = {};
 
 const MAX_CYCLES = 12;
 
-function loadState() {
-  const s = localStorage.getItem('estoico_state');
-  if (s) state = JSON.parse(s);
-  else state = {
-    name: '',
-    startDate: null,
-    completedDays: [],
-    streak: 0,
-    maxStreak: 0,
-    plannerData: {},
-    audioCount: 0,
-    soundUrls: {
+const DEFAULT_SOUND_URLS = {
     focus: [
       'https://firebasestorage.googleapis.com/v0/b/estoicismo-trincheira.firebasestorage.app/o/M%C3%BAsicas%20Foco%2FHegemonikon.mp3?alt=media&token=88890cea-e04a-4ed0-bb16-3a4f152b39ba',
       'https://firebasestorage.googleapis.com/v0/b/estoicismo-trincheira.firebasestorage.app/o/M%C3%BAsicas%20Foco%2FKathe%CC%82kon.mp3?alt=media&token=75dc1a89-8ea2-413c-94c7-edcef1541d11',
@@ -1840,7 +1814,20 @@ function loadState() {
       'https://firebasestorage.googleapis.com/v0/b/estoicismo-trincheira.firebasestorage.app/o/M%C3%BAsicas%20Sono%2FMelete.mp3?alt=media&token=a8ad72a5-23c9-40d3-a123-0219baae3847',
       'https://firebasestorage.googleapis.com/v0/b/estoicismo-trincheira.firebasestorage.app/o/M%C3%BAsicas%20Sono%2FMemento%20Mori%2C%20Memento%20Vivere.mp3?alt=media&token=5a30dbda-7a55-43e7-af5b-5886ab30ae1b'
     ]
-  },
+  };
+
+function loadState() {
+  const s = localStorage.getItem('estoico_state');
+  if (s) state = JSON.parse(s);
+  else state = {
+    name: '',
+    startDate: null,
+    completedDays: [],
+    streak: 0,
+    maxStreak: 0,
+    plannerData: {},
+    audioCount: 0,
+    soundUrls: DEFAULT_SOUND_URLS,
     lastDay: 1,
     currentCycle: 1,
     cycles: [],
@@ -2034,7 +2021,13 @@ function _applyFirebaseData(data) {
   state.streak          = data.streak          || 0;
   state.maxStreak       = data.maxStreak       || 0;
   state.audioCount      = data.audioCount      || 0;
-  state.soundUrls       = data.soundUrls       || { focus:[], decompress:[], sleep:[] };
+  // Manter URLs padrão se Firebase não tiver URLs configuradas
+  const savedUrls = data.soundUrls || {};
+  state.soundUrls = {
+    focus:      (savedUrls.focus      && savedUrls.focus.length)      ? savedUrls.focus      : DEFAULT_SOUND_URLS.focus,
+    decompress: (savedUrls.decompress && savedUrls.decompress.length) ? savedUrls.decompress : DEFAULT_SOUND_URLS.decompress,
+    sleep:      (savedUrls.sleep      && savedUrls.sleep.length)      ? savedUrls.sleep      : DEFAULT_SOUND_URLS.sleep,
+  };
   state.currentCycle    = data.cicloAtual      || 1;
   state.cycles          = data.ciclos          || [];
   state.lastActivityDate= data.lastActivityDate|| null;
@@ -2942,3 +2935,5 @@ if (state.name && !window._fb) {
 </div>
 </body>
 </html>
+const DEFAULT_SOUND_URLS = 
+
