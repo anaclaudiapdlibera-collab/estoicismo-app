@@ -2740,18 +2740,15 @@ function playTrack(url, idx) {
 }
 
 function saveSoundUrls() {
-  const parse = (id) => document.getElementById(id).value.split(',').map(s=>s.trim()).filter(Boolean);
-  state.soundUrls = { focus: parse('focusUrls'), decompress: parse('decompressUrls'), sleep: parse('sleepUrls') };
+  // Função mantida por compatibilidade — URLs são gerenciadas via DEFAULT_SOUND_URLS
   saveState();
-  showToast('URLs salvas!');
 }
 
 function loadSoundUrls() {
-  if (state.soundUrls) {
-    document.getElementById('focusUrls').value = (state.soundUrls.focus || []).join(', ');
-    document.getElementById('decompressUrls').value = (state.soundUrls.decompress || []).join(', ');
-    document.getElementById('sleepUrls').value = (state.soundUrls.sleep || []).join(', ');
-  }
+  // Textareas de configuração foram removidos — apenas renderizar as tracks
+  ['focus', 'decompress', 'sleep'].forEach(mode => {
+    renderTracks(mode);
+  });
 }
 
 // ══════════════════════════════════════════════════════════
