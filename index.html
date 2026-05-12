@@ -2193,19 +2193,19 @@ async function _saveToFirebase() {
 
 function getCurrentDay() {
   if (!state.startDate) return 1;
-  if (!state.completedDays || state.completedDays.length === 0) return 1;
-  const lastDone = Math.max(...state.completedDays);
-  const nextDay = Math.min(lastDone + 1, 30);
 
-  // No ciclo 1: verifica se o próximo dia já pode ser acessado (meia-noite passou)
-  if ((state.currentCycle || 1) === 1 && state.dayCompletedAt && state.dayCompletedAt[lastDone]) {
-    const completedDate = new Date(state.dayCompletedAt[lastDone]);
-    const nextUnlock = new Date(completedDate);
-    nextUnlock.setDate(nextUnlock.getDate() + 1);
-    nextUnlock.setHours(0, 0, 0, 0);
-    if (new Date() < nextUnlock) return lastDone; // ainda mostra o dia concluído, não o próximo
-  }
-  return nextDay;
+  // Calcula quantos dias passaram desde o início (baseado na data de início, não em marcar completo)
+  const start = new Date(state.startDate);
+  start.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diffMs = today - start;
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  // Dia liberado = dias passados + 1, limitado a 30
+  const dayByDate = Math.min(diffDays + 1, 30);
+
+  return dayByDate;
 }
 
 // ══════════════════════════════════════════════════════════
